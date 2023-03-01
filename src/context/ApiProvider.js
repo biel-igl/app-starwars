@@ -5,6 +5,8 @@ import ApiContext from './ApiContext';
 export default function ApiProvider({ children }) {
   const [results, setResults] = useState();
   const [error, setError] = useState(null);
+  const [nameFilter, setNameFilter] = useState('');
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -18,16 +20,18 @@ export default function ApiProvider({ children }) {
           delete result.residents;
           return result;
         });
-        setResults(deleteResidents);
+        const filtered = deleteResidents
+          .filter((cada) => cada.name.toLowerCase().includes(nameFilter.toLowerCase()));
+        setResults(filtered);
       } catch (erro) {
         setError(erro);
       }
     };
     fetchData();
-  }, [setResults]);
+  }, [setResults, nameFilter]);
   const values = useMemo(() => ({
-    results, setResults, error, setError, useEffect,
-  }), [results, error]);
+    results, setResults, error, setError, useEffect, setNameFilter, nameFilter,
+  }), [results, error, nameFilter]);
   return (
     <ApiContext.Provider value={ values }>
       {children}
