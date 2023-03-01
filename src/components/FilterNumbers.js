@@ -1,20 +1,23 @@
 import { useContext, useState } from 'react';
 import ApiContext from '../context/ApiContext';
 
+const initialFilters = {
+  categorie: 'population',
+  faixa: 'maior que',
+  number: 0,
+};
+
 export default function FilterNumber() {
   const { results, setResults } = useContext(ApiContext);
-  const [filters, setFilters] = useState({
-    categorie: 'population',
-    faixa: 'maior que',
-    number: 0,
-  });
-  const categories = [
+  const [filters, setFilters] = useState(initialFilters);
+  const [filterClick, setFilterClick] = useState([]);
+  const [categories, setCategories] = useState([
     'population',
     'orbital_period',
     'diameter',
     'rotation_period',
     'surface_water',
-  ];
+  ]);
   const onChange = ({ target }) => {
     setFilters({ ...filters, [target.name]: target.value });
   };
@@ -28,6 +31,27 @@ export default function FilterNumber() {
         return cada;
       });
       setResults(resultsFiltered);
+      setFilters(initialFilters);
+    }
+    if (!filterClick.length) {
+      filterClick.push(filters);
+      filterClick.map((cada) => {
+        const index = categories.indexOf(cada.categorie);
+        categories.splice(index, 1);
+        return setCategories(categories);
+      });
+    }
+    if (filterClick.length) {
+      filterClick.push(filters);
+      setFilterClick([...new Set(filterClick)]);
+      filterClick.map((cada) => {
+        const index = categories.indexOf(cada.categorie);
+        const not = -1;
+        if (index !== not) {
+          categories.splice(index, 1);
+        }
+        return setCategories(categories);
+      });
     }
   };
 
@@ -61,7 +85,7 @@ export default function FilterNumber() {
       <button
         type="button"
         data-testid="button-filter"
-        onClick={ () => onClick() }
+        onClick={ onClick }
       >
         Filtrar
       </button>

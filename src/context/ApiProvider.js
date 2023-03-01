@@ -29,6 +29,7 @@ export default function ApiProvider({ children }) {
     };
     fetchData();
   }, [setResults, nameFilter]);
+
   const values = useMemo(() => ({
     results, setResults, error, setError, useEffect, setNameFilter, nameFilter,
   }), [results, error, nameFilter]);
