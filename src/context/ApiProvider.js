@@ -6,6 +6,14 @@ export default function ApiProvider({ children }) {
   const [results, setResults] = useState();
   const [error, setError] = useState(null);
   const [nameFilter, setNameFilter] = useState('');
+  const [resultsClean, setResultsClean] = useState();
+  const [initialCategories] = useState([
+    'population',
+    'orbital_period',
+    'diameter',
+    'rotation_period',
+    'surface_water',
+  ]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,6 +31,7 @@ export default function ApiProvider({ children }) {
         const filtered = deleteResidents
           .filter((cada) => cada.name.toLowerCase().includes(nameFilter.toLowerCase()));
         setResults(filtered);
+        setResultsClean(filtered);
       } catch (erro) {
         setError(erro);
       }
@@ -31,8 +40,16 @@ export default function ApiProvider({ children }) {
   }, [setResults, nameFilter]);
 
   const values = useMemo(() => ({
-    results, setResults, error, setError, useEffect, setNameFilter, nameFilter,
-  }), [results, error, nameFilter]);
+    results,
+    setResults,
+    error,
+    setError,
+    useEffect,
+    setNameFilter,
+    nameFilter,
+    resultsClean,
+    initialCategories,
+  }), [results, error, nameFilter, resultsClean, initialCategories]);
   return (
     <ApiContext.Provider value={ values }>
       {children}
