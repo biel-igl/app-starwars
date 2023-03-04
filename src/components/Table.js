@@ -27,7 +27,7 @@ function Table() {
           {results
             .map((cada) => (
               <tr key={ cada.name }>
-                <td>
+                <td data-testid="planet-name">
                   { cada.name }
                 </td>
                 <td>

@@ -14,8 +14,28 @@ export default function ApiProvider({ children }) {
     'rotation_period',
     'surface_water',
   ]);
+  const [order, setOrder] = useState({
+    column: 'population',
+    sort: 'ASC',
+  });
 
   useEffect(() => {
+    function compareAsc(a, b) {
+      const { column } = order;
+      const menosUm = -1;
+      if (b[column] === 'unknown') {
+        return menosUm;
+      } return a[column] - b[column];
+    }
+
+    function compareDesc(a, b) {
+      const { column } = order;
+      const menosUm = -1;
+      if (b[column] === 'unknown') {
+        return menosUm;
+      } return b[column] - a[column];
+    }
+
     const fetchData = async () => {
       try {
         const data = await fetch('https://swapi.dev/api/planets');
@@ -30,14 +50,22 @@ export default function ApiProvider({ children }) {
         });
         const filtered = deleteResidents
           .filter((cada) => cada.name.toLowerCase().includes(nameFilter.toLowerCase()));
-        setResults(filtered);
-        setResultsClean(filtered);
+        if (order.sort === 'ASC') {
+          const filterAsc = filtered.sort(compareAsc);
+          setResults(filterAsc);
+          setResultsClean(filterAsc);
+        }
+        if (order.sort === 'DESC') {
+          const filterDesc = filtered.sort(compareDesc);
+          setResults(filterDesc);
+          setResultsClean(filterDesc);
+        }
       } catch (erro) {
         setError(erro);
       }
     };
     fetchData();
-  }, [setResults, nameFilter]);
+  }, [setResults, nameFilter, order]);
 
   const values = useMemo(() => ({
     results,
@@ -49,7 +77,9 @@ export default function ApiProvider({ children }) {
     nameFilter,
     resultsClean,
     initialCategories,
-  }), [results, error, nameFilter, resultsClean, initialCategories]);
+    setOrder,
+    order,
+  }), [results, error, nameFilter, resultsClean, initialCategories, order]);
   return (
     <ApiContext.Provider value={ values }>
       {children}
