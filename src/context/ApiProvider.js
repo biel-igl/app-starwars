@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import ApiContext from './ApiContext';
+import ApiFetchData from '../services/ApiFetchData';
 
 export default function ApiProvider({ children }) {
-  const [results, setResults] = useState();
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [results, setResults] = useState();
   const [nameFilter, setNameFilter] = useState('');
-  const [resultsClean, setResultsClean] = useState();
+  const [resultsClean, setResultsClean] = useState(null);
   const [initialCategories] = useState([
     'population',
     'orbital_period',
@@ -20,54 +22,52 @@ export default function ApiProvider({ children }) {
   });
 
   useEffect(() => {
-    function compareAsc(a, b) {
-      const { column } = order;
-      const menosUm = -1;
-      if (b[column] === 'unknown') {
-        return menosUm;
-      } return a[column] - b[column];
-    }
+    const getResults = async () => {
+      const result = await ApiFetchData();
+      setResultsClean(result);
+    };
+    getResults();
+  }, []);
 
-    function compareDesc(a, b) {
-      const { column } = order;
-      const menosUm = -1;
-      if (b[column] === 'unknown') {
-        return menosUm;
-      } return b[column] - a[column];
-    }
+  useEffect(() => {
+    const filters = async () => {
+      function compareAsc(a, b) {
+        const { column } = order;
+        const menosUm = -1;
+        if (b[column] === 'unknown') {
+          return menosUm;
+        } return a[column] - b[column];
+      }
 
-    const fetchData = async () => {
-      try {
-        const data = await fetch('https://swapi.dev/api/planets');
-        if (!data.ok) {
-          const newError = await data.json();
-          throw newError.detail;
-        }
-        const json = await data.json();
-        const deleteResidents = json.results.map((result) => {
-          delete result.residents;
-          return result;
-        });
-        const filtered = deleteResidents
+      function compareDesc(a, b) {
+        const { column } = order;
+        const menosUm = -1;
+        if (b[column] === 'unknown') {
+          return menosUm;
+        } return b[column] - a[column];
+      }
+
+      if (resultsClean) {
+        const filtered = resultsClean
           .filter((cada) => cada.name.toLowerCase().includes(nameFilter.toLowerCase()));
+
         if (order.sort === 'ASC') {
           const filterAsc = filtered.sort(compareAsc);
           setResults(filterAsc);
-          setResultsClean(filterAsc);
+          setLoading(false);
         }
         if (order.sort === 'DESC') {
           const filterDesc = filtered.sort(compareDesc);
           setResults(filterDesc);
-          setResultsClean(filterDesc);
+          setLoading(false);
         }
-      } catch (erro) {
-        setError(erro);
       }
     };
-    fetchData();
-  }, [setResults, nameFilter, order]);
+    filters();
+  }, [nameFilter, order, resultsClean]);
 
   const values = useMemo(() => ({
+    loading,
     results,
     setResults,
     error,
@@ -79,7 +79,10 @@ export default function ApiProvider({ children }) {
     initialCategories,
     setOrder,
     order,
-  }), [results, error, nameFilter, resultsClean, initialCategories, order]);
+  }), [
+    results,
+    error,
+    nameFilter, resultsClean, initialCategories, order, setError, loading]);
   return (
     <ApiContext.Provider value={ values }>
       {children}

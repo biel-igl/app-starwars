@@ -2,8 +2,8 @@ import { useContext } from 'react';
 import ApiContext from '../context/ApiContext';
 
 function Table() {
-  const { results } = useContext(ApiContext);
-  return (results ? (
+  const { results, loading } = useContext(ApiContext);
+  return (loading ? ('Carregando...') : (
     <div>
       <table>
         <thead>
@@ -70,8 +70,7 @@ function Table() {
             ))}
         </tbody>
       </table>
-    </div>
-  ) : ('Carregando...')
+    </div>)
   );
 }
 export default Table;
